@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34607.79
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigmaPracticalTask", "SigmaPracticalTask\SigmaPracticalTask.csproj", "{460DA840-B26E-48DA-ABCB-EDAE0E47C29F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SigmaPracticalTask", "SigmaPracticalTask\SigmaPracticalTask.csproj", "{460DA840-B26E-48DA-ABCB-EDAE0E47C29F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLibrary", "CommonLibrary\CommonLibrary.csproj", "{83BA0CD1-FC70-45F6-A5CE-27B5A0BC18A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonLibrary", "CommonLibrary\CommonLibrary.csproj", "{83BA0CD1-FC70-45F6-A5CE-27B5A0BC18A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

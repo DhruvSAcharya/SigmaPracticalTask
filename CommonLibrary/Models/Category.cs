@@ -6,8 +6,8 @@ namespace CommonLibrary.Models
     {
         [Key]
         public int CategoryId { get; set; }
-        [Required]
-        public CategoryName CategoryName { get; set; }
+        [Required(ErrorMessage ="Please Provide CategoryName")]
+        public CategoryName? CategoryName { get; set; }
         public bool IsActive { get; set; } = true;
     }
 

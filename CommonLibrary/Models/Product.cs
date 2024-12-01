@@ -19,14 +19,17 @@ namespace CommonLibrary.Models
         [Required(ErrorMessage = "Please Generate SUK")]
         public string? SKU { get; set; }
         public int CategoryId { get; set; }
+        [ValidateNested]
         [ForeignKey("CategoryId")]
-        public Category Category { get; set; } = new();
+        public Category? Category { get; set; } = new();
         [Required(ErrorMessage = "Please Provide BasePrice")]
-        public int BasePrice { get; set; }
+        public int? BasePrice { get; set; }
         [Required(ErrorMessage = "Please Provide MRP")]
-        public int MRP { get; set; }
-        public string Description { get; set; }
-        public CurrencyType Currency { get; set; }
+        public int? MRP { get; set; }
+        [Required(ErrorMessage = "Please Provide Description")]
+        public string? Description { get; set; }
+        [Required(ErrorMessage = "Please select Currency")]
+        public CurrencyType? Currency { get; set; }
         [Required]
         public DateTime ManufacturedDate { get; set; } = DateTime.Now;
         [Required]

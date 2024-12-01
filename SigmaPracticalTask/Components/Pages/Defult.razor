@@ -1,0 +1,188 @@
+﻿@page "/"
+
+@rendermode InteractiveServer
+@inject IProductRepository Repository
+@inject NavigationManager Navigation
+
+<PageTitle>Product List</PageTitle>
+
+<Modal @ref="modal" />
+
+<h3>Display Products</h3>
+
+@if (products is null)
+{
+    @Loading
+}
+
+<Grid TItem="Product"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="ProductsDataProvider"
+      AllowPaging="true"
+      PageSize="5"
+      Responsive="true"
+      AllowSelection="true"
+      SelectedItemsChanged="OnSelectedItemsChanged">
+
+    <GridColumns>
+        <GridColumn TItem="Product" HeaderText="Id" PropertyName="Id" SortKeySelector="item => item.ProductID">
+            @context.ProductID
+        </GridColumn>
+        <GridColumn TItem="Product" HeaderText="Name" PropertyName="Name" SortKeySelector="item => item.Name">
+            @context.Name
+        </GridColumn>
+        <GridColumn TItem="Product" HeaderText="SKU" PropertyName="SKU" SortKeySelector="item => item.SKU">
+            @context.SKU
+        </GridColumn>
+        <GridColumn TItem="Product" HeaderText="Category" PropertyName="Category" SortKeySelector="item => item.Category.CategoryName">
+            @context.Category.CategoryName
+        </GridColumn>
+        <GridColumn TItem="Product" HeaderText="BasePrice" PropertyName="BasePrice" SortKeySelector="item => item.BasePrice">
+            @context.BasePrice
+        </GridColumn>
+        <GridColumn TItem="Product" HeaderText="MRP" PropertyName="MRP" SortKeySelector="item => item.MRP">
+            @context.MRP
+        </GridColumn>
+        <GridColumn TItem="Product" HeaderText="Description" PropertyName="Description" SortKeySelector="item => item.Description">
+            @context.Description
+        </GridColumn>
+        <GridColumn TItem="Product" HeaderText="Currency" PropertyName="Currency" SortKeySelector="item => item.Currency">
+            @context.Currency
+        </GridColumn>
+        <GridColumn TItem="Product" HeaderText="ManufacturedDate" PropertyName="ManufacturedDate" SortKeySelector="item => item.ManufacturedDate">
+            @context.ManufacturedDate
+        </GridColumn>
+        <GridColumn TItem="Product" HeaderText="ExpireDate" PropertyName="ExpireDate" SortKeySelector="item => item.ExpireDate">
+            @context.ExpireDate
+        </GridColumn>
+    </GridColumns>
+
+</Grid>
+
+<Button Color="ButtonColor.Primary" @onclick="NavigateToCreate">Create</Button>
+<Button Color="ButtonColor.Secondary" @onclick="ShowUpdateDialog">Update</Button>
+<Button Color="ButtonColor.Danger" @onclick="OnShowModalClick">Delete</Button>
+
+
+
+@code {
+
+    private List<Product> products = default!;
+
+    private Product? selectedProduct = null;
+
+    private Modal modal = default!;
+
+    private string Loading = "Loading...";
+
+    [Inject] protected ToastService ToastService { get; set; } = default!;
+
+
+
+    private async Task<GridDataProviderResult<Product>> ProductsDataProvider(GridDataProviderRequest<Product> request)
+    {
+        if (products is null)
+        {
+            products = await Repository.GetAllAsync();
+            Loading = "";
+            StateHasChanged();
+        }
+
+        return await Task.FromResult(request.ApplyTo(products));
+    }
+
+    private void NavigateToCreate(){
+        Navigation.NavigateTo("/add-new");
+    }
+
+    private Task OnSelectedItemsChanged(HashSet<Product> products)
+    {
+        selectedProduct = products is not null && products.Any() ? products.FirstOrDefault() : null;
+        ToastService.Notify(new(ToastType.Danger, $"Selected Product is : {selectedProduct.Name}"));
+        return Task.CompletedTask;
+    }
+
+    private async Task ShowUpdateDialog()
+    {
+        if (selectedProduct != null)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("ProductDetails", selectedProduct);
+            parameters.Add("OnclickCallback", EventCallback.Factory.Create<Product>(this, UpdateProduct));
+            if (modal != null)
+            {
+                await modal.ShowAsync<Edit>(title: "Product Details", parameters: parameters);
+            }
+            else
+            {
+                // Log or handle error in case modal is not connected
+                ToastService.Notify(new(ToastType.Danger, $"Model is not ready"));
+            }
+        }
+        else
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Product is not selected"));
+        }
+
+    }
+
+    private async Task UpdateProduct(Product updatedProduct)
+    {
+        if(updatedProduct != null)
+        {
+            Repository.UpdateAsync(updatedProduct);
+            StateHasChanged();
+        }
+        else
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Something went Wrong While Updating"));
+        }
+    }
+
+    private async Task DeleteProduct()
+    {
+        if(selectedProduct != null)
+        {
+            await Repository.DeleteAsync(selectedProduct.ProductID);
+            products.Remove(selectedProduct);
+            products = await Repository.GetAllAsync();
+            selectedProduct = null;
+            StateHasChanged();
+            OnHideModalClick();
+        }
+        else
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Product is not selected"));
+        }
+
+    }
+
+    private async Task OnShowModalClick()
+    {
+        if (selectedProduct != null)
+        {
+            await modal.ShowAsync();
+        }
+        else
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Product is not selected"));
+        }
+        
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+}
+
+<Modal @ref="modal" Title="Modal title">
+    <BodyTemplate>
+        Confirm Delete
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        <Button Color="ButtonColor.Danger" @onclick="DeleteProduct">Delete</Button>
+    </FooterTemplate>
+</Modal>

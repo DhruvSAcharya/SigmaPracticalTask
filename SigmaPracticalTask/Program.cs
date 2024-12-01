@@ -1,3 +1,4 @@
+using BlazorBootstrap;
 using CommonLibrary.Interface;
 using CommonLibrary.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +11,9 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddDbContextFactory<AppDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")));
-
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddBlazorBootstrap();
+builder.Services.AddScoped<ToastService>();
 
 var app = builder.Build();
 

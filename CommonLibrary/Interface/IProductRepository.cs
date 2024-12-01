@@ -10,5 +10,9 @@ namespace CommonLibrary.Interface
     public interface IProductRepository
     {
         Task AddAsync(Product Product);
+        Task UpdateAsync(Product Product);
+        Task DeleteAsync(int id);
+        Task<Product> GetAsync(int id);
+        Task<List<Product>> GetAllAsync();
     }
 }
