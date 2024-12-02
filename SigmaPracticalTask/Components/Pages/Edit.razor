@@ -1,16 +1,13 @@
-﻿<h3>Update Product</h3>
-
-<div class="row justify-content-center">
-    <div class="col-6">
-        <EditForm FormName="UpdateProductForm" Model="ProductDetails">
-            <h3>
-                Update Product
-            </h3>
+﻿<div class="row justify-content-center">
+    <div class="col-10">
+        <EditForm FormName="UpdateProductForm" EditContext="@editContext">
+            <DataAnnotationsValidator />
             <div class="mb-3">
                 <label for="name" class="form-label">
                     Name
                 </label>
                 <InputText id="name" @bind-Value="ProductDetails.Name" class="form-control" />
+                <ValidationMessage For="@(() => ProductDetails.Name)" />
             </div>
             <div class="mb-3">
                 <label class="form-label">
@@ -22,8 +19,7 @@
                     {
                         <p>SKU  : @ProductDetails.SKU</p>
                     }
-
-
+                    <ValidationMessage For="@(() => ProductDetails.SKU)" />
                 </label>
                 <input type="hidden" @bind="ProductDetails.SKU" />
                 <br />
@@ -47,18 +43,21 @@
                     Base Price
                 </label>
                 <InputNumber id="base-price" @bind-Value="ProductDetails.BasePrice" class="form-control" />
+                <ValidationMessage For="@(() => ProductDetails.BasePrice)" />
             </div>
             <div class="mb-3">
                 <label for="mrp" class="form-label">
                     MRP
                 </label>
                 <InputNumber id="mrp" @bind-Value="ProductDetails.MRP" class="form-control" />
+                <ValidationMessage For="@(() => ProductDetails.MRP)" />
             </div>
             <div class="mb-3">
                 <label for="description" class="form-label">
                     Description
                 </label>
                 <InputTextArea id="description" @bind-Value="ProductDetails.Description" class="form-control" />
+                <ValidationMessage For="@(() => ProductDetails.Description)" />
             </div>
             <div class="mb-3">
                 <label for="currency" class="form-label">
@@ -72,27 +71,39 @@
                         </option>
                     }
                 </InputSelect>
+                <ValidationMessage For="@(() => ProductDetails.Currency)" />
             </div>
             <Button class="mt-3" Color="ButtonColor.Success" Type="ButtonType.Button" @onclick="OnClickCallbackHandler">
-                Trigger a Parent component method
+                Update Changes
             </Button>
 
         </EditForm>
     </div>
-
 </div>
 
-
-
 @code {
-    [SupplyParameterFromForm]
-    [Parameter] public Product ProductDetails { get; set; }
+
+    [Parameter] public Product? ProductDetails { get; set; }
 
     [Parameter] public EventCallback<Product> OnClickCallback { get; set; }
 
+    [Inject] protected ToastService ToastService { get; set; } = default!;
+
+    private EditContext editContext;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(ProductDetails);
+    }
+
     private async Task OnClickCallbackHandler()
     {
-        await OnClickCallback.InvokeAsync(ProductDetails);
+        if (editContext.Validate())
+        {
+            await OnClickCallback.InvokeAsync(ProductDetails);
+        }else{
+            ToastService.Notify(new(ToastType.Danger, $"Product enter valid details."));
+        }
     }
     private void GenerateUniqueSKU()
     {
@@ -118,11 +129,5 @@
         var random = new Random();
         return new string(Enumerable.Repeat(chars, length)
             .Select(s => s[random.Next(s.Length)]).ToArray());
-    }
-
-    protected override void OnInitialized()
-    {
-
-        base.OnInitialized();
     }
 }

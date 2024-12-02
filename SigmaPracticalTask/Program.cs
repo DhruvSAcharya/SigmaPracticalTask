@@ -6,13 +6,15 @@ using SigmaPracticalTask.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddBlazorBootstrap();
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddDbContextFactory<AppDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddBlazorBootstrap();
+
 builder.Services.AddScoped<ToastService>();
 
 var app = builder.Build();

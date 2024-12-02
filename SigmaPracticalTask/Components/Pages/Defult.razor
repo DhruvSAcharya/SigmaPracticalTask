@@ -1,12 +1,12 @@
 ﻿@page "/"
 
-@rendermode InteractiveServer
 @inject IProductRepository Repository
 @inject NavigationManager Navigation
 
 <PageTitle>Product List</PageTitle>
 
 <Modal @ref="modal" />
+<Modal @ref="modal2" Fullscreen="ModalFullscreen.ExtraLargeDown" />
 
 <h3>Display Products</h3>
 
@@ -72,6 +72,7 @@
     private Product? selectedProduct = null;
 
     private Modal modal = default!;
+    private Modal modal2 = default!;
 
     private string Loading = "Loading...";
 
@@ -98,7 +99,9 @@
     private Task OnSelectedItemsChanged(HashSet<Product> products)
     {
         selectedProduct = products is not null && products.Any() ? products.FirstOrDefault() : null;
-        ToastService.Notify(new(ToastType.Danger, $"Selected Product is : {selectedProduct.Name}"));
+        if(selectedProduct != null){
+            ToastService.Notify(new(ToastType.Danger, $"Selected Product is : {selectedProduct?.Name}"));
+        }
         return Task.CompletedTask;
     }
 
@@ -106,32 +109,36 @@
     {
         if (selectedProduct != null)
         {
-            var parameters = new Dictionary<string, object>();
-            parameters.Add("ProductDetails", selectedProduct);
-            parameters.Add("OnclickCallback", EventCallback.Factory.Create<Product>(this, UpdateProduct));
-            if (modal != null)
-            {
-                await modal.ShowAsync<Edit>(title: "Product Details", parameters: parameters);
-            }
-            else
-            {
-                // Log or handle error in case modal is not connected
-                ToastService.Notify(new(ToastType.Danger, $"Model is not ready"));
+            try{
+                var parameters = new Dictionary<string, object>();
+                parameters.Add("ProductDetails", selectedProduct);
+                parameters.Add("OnclickCallback", EventCallback.Factory.Create<Product>(this, UpdateProduct));
+                if (modal2 != null)
+                {
+                    await modal2.ShowAsync<Edit>(title: "Product Details", parameters: parameters);
+                }
+                else
+                {
+                    ToastService.Notify(new(ToastType.Danger, $"Model is not ready"));
+                }
+            }catch(Exception ex){
+                ToastService.Notify(new(ToastType.Danger, $"Error: {ex.Message}."));
             }
         }
         else
         {
             ToastService.Notify(new(ToastType.Danger, $"Product is not selected"));
         }
-
     }
 
     private async Task UpdateProduct(Product updatedProduct)
     {
         if(updatedProduct != null)
         {
-            Repository.UpdateAsync(updatedProduct);
+            await Repository.UpdateAsync(updatedProduct);
+            selectedProduct = null;
             StateHasChanged();
+            await modal2.HideAsync();
         }
         else
         {
@@ -148,7 +155,7 @@
             products = await Repository.GetAllAsync();
             selectedProduct = null;
             StateHasChanged();
-            OnHideModalClick();
+            await OnHideModalClick();
         }
         else
         {
